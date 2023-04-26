@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import CredentialComponent from './CredentialComponent';
+import authService from '../service/authService.js';
 
 export default function LoginComponent () {
   const [credential, setCredential] = useState({username: '', password: ''});
   const [infoMessage, setInfoMessage] = useState('');
 
-  const authenticate = async (options) => {
-    let res = await fetch("http://127.0.0.1:4000/auth/login", options);
+  const submitHandler = async (event) => {
+    event.preventDefault();
+
+    let res = await authService.authenticate(credential);
     
     if(res.status >= 400) {
       let text = await res.text();
@@ -17,39 +21,16 @@ export default function LoginComponent () {
     }
   }
 
-  const submitHandler = async (event) => {
-    event.preventDefault();
-
-    const fetchOptions = {
-      method: "POST",
-      body: JSON.stringify(credential),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-
-    authenticate(fetchOptions);
-  }
-
   const handleChange = ({name, value}) => {
     setCredential({...credential, [name]: value});
   }
 
   return (
-    <div className="App">
+    <div>
       <form onSubmit={submitHandler}>
         <h2>Login</h2>
-        <div>
-          <p>
-            <label>Username</label>
-            <input value={credential.username} name="username" onChange={e => handleChange(e.target)} type="text" />
-          </p>
-          <p>
-            <label>Password</label>
-            <input value={credential.password} name="password" onChange={e => handleChange(e.target)} type="password" />
-          </p>
-          <p>{infoMessage}</p>
-        </div>
+        <CredentialComponent onTextChange={handleChange} />
+        <p>{infoMessage}</p>
 
         <button type="submit">Login</button>
         <button type="reset">Cancel</button>
